@@ -4,32 +4,48 @@ import PizzaBlock from "../components/PizzaBlock";
 import Skeleton from "../components/PizzaBlock/Skeleton";
 import Sort from "../components/Sort";
 import Pagination from "../components/Pagination";
+import { setCategoryId, setPage } from "../redux/slices/filterSlice";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { useSearchContext } from "../shared/contexts/searchContext";
+import axios from "axios";
 
-const Home = ({ searchValue }) => {
-  const [items, setItems] = useState([]);
+type PizzaItem = {
+  id: number;
+  imageUrl: string;
+  title: string;
+  types: number[];
+  sizes: number[];
+  price: number;
+  category: number;
+  rating: number;
+};
+
+const Home = () => {
+  const { searchValue } = useSearchContext();
+  const currentPage = useAppSelector((state) => state.filters.currentPage);
+
+  const categoryId = useAppSelector((state) => state.filters.categoryId);
+  const sortType = useAppSelector((state) => state.filters.sort.sortProperty);
+  const dispatch = useAppDispatch();
+
+  const [items, setItems] = useState<PizzaItem[]>([]);
   const [isLoader, setIsLoader] = useState(true);
-  const [categoryId, setCategoryId] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortType, setSortType] = useState({
-    name: "популярности",
-    sort: "rating",
-  });
 
   const allCategory = categoryId > 0 ? `category=${categoryId}` : "";
   const search = searchValue ? `&search=${searchValue}` : "";
 
   useEffect(() => {
     setIsLoader(true);
-    fetch(
-      `https://67b4aaf3a9acbdb38ecfeebc.mockapi.io/items?page=${currentPage}&limit=4&${allCategory}&sortBy=${sortType.sort}&order=desc${search}`
-    )
-      .then((res) => res.json())
+    axios
+      .get(
+        `https://67b4aaf3a9acbdb38ecfeebc.mockapi.io/items?page=${currentPage}&limit=4&${allCategory}&sortBy=${sortType}&order=desc${search}`
+      )
       .then((res) => {
-        setItems(res);
+        setItems(res.data);
         setIsLoader(false);
       });
     window.scrollTo(0, 0);
-  }, [categoryId, sortType, searchValue, currentPage]);
+  }, [categoryId, sortType, searchValue, currentPage, allCategory, search]);
 
   const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
 
@@ -37,19 +53,24 @@ const Home = ({ searchValue }) => {
     <Skeleton key={index} />
   ));
 
+  const onChangeCategory = (id: number) => {
+    dispatch(setCategoryId(id));
+  };
+
   return (
     <div className="container">
       <div className="content__top">
         <Categories
           categoryId={categoryId}
-          onChangeCategory={(i) => setCategoryId(i)}
+          onChangeCategory={onChangeCategory}
         />
-        <Sort sortType={sortType} onChangeSort={(i) => setSortType(i)} />
+        <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
       <div className="content__items">{isLoader ? skeletons : pizzas}</div>
       <Pagination
-        onChangePage={(number: number) => setCurrentPage(number)}
+        onChangePage={(num: number) => dispatch(setPage(num))}
+        currentPage={currentPage}
       />
     </div>
   );
