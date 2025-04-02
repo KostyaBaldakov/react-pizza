@@ -1,13 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Categories from "../components/Categories";
 import PizzaBlock from "../components/PizzaBlock";
 import Skeleton from "../components/PizzaBlock/Skeleton";
-import Sort from "../components/Sort";
+import Sort, { sortList } from "../components/Sort";
 import Pagination from "../components/Pagination";
-import { setCategoryId, setPage } from "../redux/slices/filterSlice";
+import {
+  setCategoryId,
+  setFilters,
+  setPage,
+} from "../redux/slices/filterSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useSearchContext } from "../shared/contexts/searchContext";
 import axios from "axios";
+import qs from "qs";
+import { useNavigate } from "react-router-dom";
 
 type PizzaItem = {
   id: number;
@@ -22,11 +28,14 @@ type PizzaItem = {
 
 const Home = () => {
   const { searchValue } = useSearchContext();
-  const currentPage = useAppSelector((state) => state.filters.currentPage);
 
-  const categoryId = useAppSelector((state) => state.filters.categoryId);
-  const sortType = useAppSelector((state) => state.filters.sort.sortProperty);
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const isSearch = useRef(false);
+
+  const currentPage = useAppSelector((state) => state.filters.currentPage);
+  const categoryId = useAppSelector((state) => state.filters.categoryId);
+  const sort = useAppSelector((state) => state.filters.sort.sortProperty);
 
   const [items, setItems] = useState<PizzaItem[]>([]);
   const [isLoader, setIsLoader] = useState(true);
@@ -34,18 +43,52 @@ const Home = () => {
   const allCategory = categoryId > 0 ? `category=${categoryId}` : "";
   const search = searchValue ? `&search=${searchValue}` : "";
 
-  useEffect(() => {
+  const fetchPizzas = () => {
     setIsLoader(true);
     axios
       .get(
-        `https://67b4aaf3a9acbdb38ecfeebc.mockapi.io/items?page=${currentPage}&limit=4&${allCategory}&sortBy=${sortType}&order=desc${search}`
+        `https://67b4aaf3a9acbdb38ecfeebc.mockapi.io/items?page=${currentPage}&limit=4&${allCategory}&sortBy=${sort}&order=desc${search}`
       )
       .then((res) => {
         setItems(res.data);
         setIsLoader(false);
       });
+  };
+
+  useEffect(() => {
+    if (window.location.search) {
+      const params = qs.parse(window.location.search.substring(1));
+
+      const sort = sortList.find(
+        (obj) => obj.sortProperty === params.sortProperty
+      );
+
+      dispatch(
+        setFilters({
+          ...params,
+          sort,
+        })
+      );
+      isSearch.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
-  }, [categoryId, sortType, searchValue, currentPage, allCategory, search]);
+
+    if (!isSearch.current) {
+      fetchPizzas();
+    }
+  }, [categoryId, sort, searchValue, currentPage, allCategory, search]);
+
+  useEffect(() => {
+    const queryString = qs.stringify({
+      sortProperty: sort,
+      categoryId,
+      currentPage,
+    });
+    navigate(`?${queryString}`);
+  }, [categoryId, sort, currentPage]);
 
   const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
 
