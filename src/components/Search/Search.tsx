@@ -11,7 +11,6 @@ const Search = () => {
 
   const handleSearchValue = useCallback(
     debounce((event: ChangeEvent<HTMLInputElement>) => {
-      console.log(event.target.value);
       setSearchValue(event.target.value);
     }, 300),
     []

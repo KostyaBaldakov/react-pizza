@@ -31,7 +31,6 @@ export const filterSlice = createSlice({
       state.sort = action.payload;
     },
     setPage(state, action) {
-      console.log(action.payload);
 
       state.currentPage = action.payload;
     },

@@ -11,9 +11,9 @@ import {
 } from "../redux/slices/filterSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useSearchContext } from "../shared/contexts/searchContext";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
-import { useNavigate } from "react-router-dom";
 
 type PizzaItem = {
   id: number;
@@ -32,6 +32,8 @@ const Home = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const isSearch = useRef(false);
+  const isMounted = useRef(false);
+  
 
   const currentPage = useAppSelector((state) => state.filters.currentPage);
   const categoryId = useAppSelector((state) => state.filters.categoryId);
@@ -54,6 +56,18 @@ const Home = () => {
         setIsLoader(false);
       });
   };
+
+  useEffect(() => {
+    if (isMounted.current) {
+      const queryString = qs.stringify({
+        sortProperty: sort,
+        categoryId,
+        currentPage,
+      });
+      navigate(`?${queryString}`);
+    }
+    isMounted.current = true;
+  }, [categoryId, sort, currentPage]);
 
   useEffect(() => {
     if (window.location.search) {
@@ -79,16 +93,11 @@ const Home = () => {
     if (!isSearch.current) {
       fetchPizzas();
     }
+
+    isSearch.current = false;
   }, [categoryId, sort, searchValue, currentPage, allCategory, search]);
 
-  useEffect(() => {
-    const queryString = qs.stringify({
-      sortProperty: sort,
-      categoryId,
-      currentPage,
-    });
-    navigate(`?${queryString}`);
-  }, [categoryId, sort, currentPage]);
+  
 
   const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
 
