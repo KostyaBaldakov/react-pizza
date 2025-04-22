@@ -14,17 +14,18 @@ import { useSearchContext } from "../shared/contexts/searchContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
+import { setItems } from "../redux/slices/pizzaSlice";
 
-type PizzaItem = {
-  id: number;
-  imageUrl: string;
-  title: string;
-  types: number[];
-  sizes: number[];
-  price: number;
-  category: number;
-  rating: number;
-};
+// type PizzaItem = {
+//   id: number;
+//   imageUrl: string;
+//   title: string;
+//   types: number[];
+//   sizes: number[];
+//   price: number;
+//   category: number;
+//   rating: number;
+// };
 
 const Home = () => {
   const { searchValue } = useSearchContext();
@@ -33,28 +34,33 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const isSearch = useRef(false);
   const isMounted = useRef(false);
-  
 
   const currentPage = useAppSelector((state) => state.filters.currentPage);
   const categoryId = useAppSelector((state) => state.filters.categoryId);
   const sort = useAppSelector((state) => state.filters.sort.sortProperty);
+  const items = useAppSelector((state) => state.pizza.items);
 
-  const [items, setItems] = useState<PizzaItem[]>([]);
   const [isLoader, setIsLoader] = useState(true);
 
   const allCategory = categoryId > 0 ? `category=${categoryId}` : "";
   const search = searchValue ? `&search=${searchValue}` : "";
 
-  const fetchPizzas = () => {
+  const fetchPizzas = async () => {
     setIsLoader(true);
-    axios
-      .get(
+
+    try {
+      const res = await axios.get(
         `https://67b4aaf3a9acbdb38ecfeebc.mockapi.io/items?page=${currentPage}&limit=4&${allCategory}&sortBy=${sort}&order=desc${search}`
-      )
-      .then((res) => {
-        setItems(res.data);
-        setIsLoader(false);
-      });
+      );
+      dispatch(setItems(res.data));
+    } catch (error) {
+      console.log("Ошибка запроса", error);
+      alert("Ошибка запроса");
+    } finally {
+      setIsLoader(false);
+    }
+
+    window.scrollTo(0, 0);
   };
 
   useEffect(() => {
@@ -88,16 +94,12 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-
     if (!isSearch.current) {
       fetchPizzas();
     }
 
     isSearch.current = false;
   }, [categoryId, sort, searchValue, currentPage, allCategory, search]);
-
-  
 
   const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
 
