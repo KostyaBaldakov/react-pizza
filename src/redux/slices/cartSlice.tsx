@@ -6,8 +6,8 @@ type CartItem = {
   title: string;
   price: number;
   imageUrl: string;
-  sizes: number[];
-  types: number[];
+  size: number;
+  type: string;
 };
 
 export interface Cart {

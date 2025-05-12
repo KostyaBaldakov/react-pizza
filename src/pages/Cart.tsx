@@ -4,15 +4,6 @@ import CartItem from "../components/CartItem";
 import { clearItems } from "../redux/slices/cartSlice";
 import CartEmpty from "../components/CartEmpty";
 
-// type CartItems = {
-//   id: number;
-//   title: string;
-//   price: number;
-//   imageUrl: string;
-//   sizes: number[];
-//   types: number[];
-// };
-
 const Cart = () => {
   const dispatch = useAppDispatch();
   const { totalPrice, items } = useAppSelector((state) => state.cart);
