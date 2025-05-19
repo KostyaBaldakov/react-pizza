@@ -10,7 +10,7 @@ export interface Filters {
   };
 }
 
-const initialState: Filters = {
+export const initialStateFilters: Filters = {
   categoryId: 0,
   currentPage: 1,
 
@@ -22,7 +22,7 @@ const initialState: Filters = {
 
 export const filterSlice = createSlice({
   name: "filters",
-  initialState,
+  initialState: initialStateFilters,
   reducers: {
     setCategoryId(state, action) {
       state.categoryId = action.payload;

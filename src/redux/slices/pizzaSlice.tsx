@@ -23,7 +23,7 @@ export interface InitialStateType {
   status: string;
 }
 
-const initialState: InitialStateType = {
+const initialStatePizza: InitialStateType = {
   items: [],
   status: "loading", // loading | success | error
 };
@@ -41,7 +41,7 @@ export const fetchPizzas = createAsyncThunk<PizzaItem[], SearchParamsType>(
 
 export const pizzaSlice = createSlice({
   name: "pizza",
-  initialState,
+  initialState: initialStatePizza,
   reducers: {
     setItems(state, action: PayloadAction<PizzaItem[]>) {
       state.items = action.payload;

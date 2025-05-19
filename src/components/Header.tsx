@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logoSvg from "../assets/img/pizza-logo.svg";
 import Search from "./Search/Search";
-import { useAppSelector } from "../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { initialStateFilters, setFilters } from "../redux/slices/filterSlice";
 
 function Header() {
   const { items, totalPrice } = useAppSelector((state) => state.cart);
@@ -9,19 +10,25 @@ function Header() {
   const totalCount = items.reduce((sum, item) => sum + item.count, 0);
 
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const onCklickReload = () => {
+    dispatch(setFilters(initialStateFilters));
+    navigate("/");
+  };
 
   return (
     <div className="header">
       <div className="container">
-        <Link to="/">
-          <div className="header__logo">
-            <img width="38" src={logoSvg} alt="Pizza logo" />
-            <div>
-              <h1>React Pizza</h1>
-              <p>самая вкусная пицца во вселенной</p>
-            </div>
+        <div className="header__logo" onClick={onCklickReload}>
+          <img width="38" src={logoSvg} alt="Pizza logo" />
+          <div>
+            <h1>React Pizza</h1>
+            <p>самая вкусная пицца во вселенной</p>
           </div>
-        </Link>
+        </div>
+
         <Search />
         {pathname !== "/cart" && (
           <div className="header__cart">

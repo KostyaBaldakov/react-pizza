@@ -15,14 +15,14 @@ export interface Cart {
   items: CartItem[];
 }
 
-const initialState: Cart = {
+const initialStateCart: Cart = {
   totalPrice: 0,
   items: [],
 };
 
 export const cartSlice = createSlice({
   name: "cart",
-  initialState,
+  initialState: initialStateCart,
   reducers: {
     addItem(state, action) {
       const findItem = state.items.find((obj) => obj.id === action.payload.id);

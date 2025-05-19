@@ -7,7 +7,6 @@ type SortListType = {
   sortProperty: string;
 };
 
-
 export const sortList: SortListType[] = [
   { name: "популярности", sortProperty: "rating" },
   { name: "цене", sortProperty: "price" },
@@ -27,9 +26,8 @@ function Sort() {
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      
-      if (!event.composedPath().includes(sortRef.current)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortRef.current && !event.composedPath().includes(sortRef.current)) {
         setOpen(false);
       }
     };
